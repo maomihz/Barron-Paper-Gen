@@ -11,7 +11,7 @@ This software executes with two parameters:
 
 2. **\# of words in the paper**
 
-  This parameter is additional and set to **100 by default**. You may leave this blank or set it to specific requirements.
+    This parameter is additional and set to **100 by default**. You may leave this blank or set it to specific requirements.
 
 ### Files & Directories
 This software package consists of following files:
