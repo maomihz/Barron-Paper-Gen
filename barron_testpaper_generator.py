@@ -2,84 +2,120 @@
 ## -*- coding: utf-8 -*-
 
 # barron_testpaper_generator.py
-  
+
 # Copyright 2017 Hisen Zhang <hisenzhang@gmail.com>
-  
+
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-  
+
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-  
+
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA.
-  
-  
 
-from random import randint 
-import sys
 
-# load argv
 
-R = int(sys.argv[1])  # take in parameter about range
-if len(sys.argv) == 3: # if the number of words are given
-	C = int(sys.argv[2])
-else:					# default # of words = 100
-	C = 100
+import random
+import sys, os, re
+from barron import Barron
 
-# initializing lists (containers)
-wordlist,buff = [],[]	
-f    = [file]*10
-text = ['']*R
+
+SAVE_FILE = 'barron_testpaper.txt'
+WORD_LIST = 'dummy'
+
+def parse_range(range_str):
+    elements = [a.strip() for a in range_str.split(',')]
+    normal = re.compile('^(\d+)$')
+    special = re.compile('^(\d+)-(\d+)$')
+
+    selection = set()
+
+    for e in elements:
+        # Single number match
+        m = normal.match(e)
+        if m:
+            selection.add(int(m.group(1)))
+            continue
+        m = special.match(e)
+
+        # Range Number Match
+        if m:
+            start = int(m.group(1))
+            end = int(m.group(2))
+            if end < start:
+                raise ValueError('Error Parsing range %s: End < Start' % e)
+            for i in range(start, end + 1):
+                selection.add(i)
+    return sorted(selection)
+
+def revparse_range(selection_list):
+    if len(selection_list) == 0:
+        return ''
+    if len(selection_list) == 1:
+        return str(selection_list[0])
+
+
+    selection_list.sort()
+    results = []
+    start = 0
+    end = 0
+    while end < len(selection_list):
+        while end < len(selection_list) - 1 and selection_list[end] + 1 == selection_list[end + 1]:
+            end += 1
+
+        if end - start > 1:
+            results.append('%d-%d' % (selection_list[start], selection_list[end]))
+        else:
+            results.append('%d' % selection_list[end])
+
+        start = end + 1
+        end = start
+    return ','.join(results)
+
+
+# Parse the arguments
+R = sys.argv[1]  # take in parameter about range
+try:
+    C = int(sys.argv[2])
+except IndexError:
+    C = 100
 
 # open resources
-sav  = open('barron_testpaper.txt','w')	# this file will be saved
-f[0] = open('./rsc/barron_01-05.hisen')	# resourses
-f[1] = open('./rsc/barron_06-10.hisen')
-f[2] = open('./rsc/barron_11-15.hisen')
-f[3] = open('./rsc/barron_16-20.hisen')
-f[4] = open('./rsc/barron_21-25.hisen')
-f[5] = open('./rsc/barron_26-30.hisen')
-f[6] = open('./rsc/barron_31-35.hisen')
-f[7] = open('./rsc/barron_36-40.hisen')
-f[8] = open('./rsc/barron_41-45.hisen')
-f[9] = open('./rsc/barron_46-50.hisen')
-	
-#load recourses into RAM according to range R given
-for i in range(0,R):
-	text[i] = f[i].read()
+sav = open(SAVE_FILE,'w')	# this file will be saved
 
-# reshape
-for i in text:
-	wordlist = wordlist + i.split(' ')
+barron = Barron('res', 'txt')
+bundles = barron.list_bundles()
+for i, n in enumerate(bundles):
+    print('[%d] %s' % (i, n))
 
-# combine and send to print buff
-for i in wordlist:
-	buff.append(i)
+user_in = int(input('Enter Selection ==> '))
+WORD_LIST = bundles[user_in]
 
-# list info
-list_info = '# Barron List 1-'+str(5*R)+' #\n\n'
-print '\n'+list_info
-sav.write(list_info)
 
-# kernel
-counter = 1
-for i in buff:
-	while counter <= C:
-		i = randint(0,len(buff)-1)
-		print str(counter).zfill(3)+'   '+buff[i]
-		sav.write(str(counter).zfill(3)+'   '+buff[i]+'\n')
-		counter += 1
+selection = parse_range(R)
+words = barron.load_words(WORD_LIST,selection)
 
-# close all files	
-for i in f:
-	i.close()
+# Randomly select number of words
+selected_words = random.sample(words.keys(), C)
+
+list_info = '# %s List %s' % (WORD_LIST, revparse_range(selection))
+
+# Write to file and print to console
+print('\n' + list_info + '\n')
+sav.write(list_info + '\n\n')
+
+for i, w in enumerate(selected_words):
+    word_line = '%03d   %s' % (i + 1, w)
+    print(word_line)
+    sav.write(word_line + '\n')
+
 sav.close()
-print '\n# Barron List 1-'+str(5*R)+' ('+str(C)+' words) has been successfully written to \'barron_testpaper.txt.\'\n'
 
+print('\n%s has been successfully written to \'barron_testpaper.txt\'.' % list_info)
