@@ -30,7 +30,10 @@ from barron import Barron
 SAVE_FILE = 'barron_testpaper.txt'
 WORD_LIST = 'dummy'
 
+
 def parse_range(range_str):
+    # convert the user string to a num list
+
     elements = [a.strip() for a in range_str.split(',')]
     normal = re.compile('^(\d+)$')
     special = re.compile('^(\d+)-(\d+)$')
@@ -56,6 +59,7 @@ def parse_range(range_str):
     return sorted(selection)
 
 def revparse_range(selection_list):
+    # convert num list into user string
     if len(selection_list) == 0:
         return ''
     if len(selection_list) == 1:
@@ -80,42 +84,43 @@ def revparse_range(selection_list):
     return ','.join(results)
 
 
-# Parse the arguments
-R = sys.argv[1]  # take in parameter about range
-try:
-    C = int(sys.argv[2])
-except IndexError:
-    C = 100
+if __name__ == "__main__":
+	# Parse the arguments
+	R = sys.argv[1]  # take in parameter about range
+	try:
+		C = int(sys.argv[2])
+	except IndexError:
+		C = 100
 
-# open resources
-sav = open(SAVE_FILE,'w')	# this file will be saved
+	# open resources
+	sav = open(SAVE_FILE,'w')	# this file will be saved
 
-barron = Barron('res', 'txt')
-bundles = barron.list_bundles()
-for i, n in enumerate(bundles):
-    print('[%d] %s' % (i, n))
+	barron = Barron('res', 'txt')
+	bundles = barron.list_bundles()
+	for i, n in enumerate(bundles):
+		print('[%d] %s' % (i, n))
 
-user_in = int(input('Enter Selection ==> '))
-WORD_LIST = bundles[user_in]
+	user_in = int(input('Enter Selection ==> '))
+	WORD_LIST = bundles[user_in]
 
 
-selection = parse_range(R)
-words = barron.load_words(WORD_LIST,selection)
+	selection = parse_range(R)
+	words = barron.load_words(WORD_LIST,selection)
 
-# Randomly select number of words
-selected_words = random.sample(words.keys(), C)
+	# Randomly select number of words
+	selected_words = random.sample(words.keys(), C)
 
-list_info = '# %s List %s' % (WORD_LIST, revparse_range(selection))
+	list_info = '# %s List %s' % (WORD_LIST, revparse_range(selection))
 
-# Write to file and print to console
-print('\n' + list_info + '\n')
-sav.write(list_info + '\n\n')
+	# Write to file and print to console
+	print('\n' + list_info + '\n')
+	sav.write(list_info + '\n\n')
 
-for i, w in enumerate(selected_words):
-    word_line = '%03d   %s' % (i + 1, w)
-    print(word_line)
-    sav.write(word_line + '\n')
+	for i, w in enumerate(selected_words):
+		word_line = '%03d   %s' % (i + 1, w)
+		print(word_line)
+		sav.write(word_line + '\n')
 
-sav.close()
+	sav.close()
 
-print('\n%s has been successfully written to \'barron_testpaper.txt\'.' % list_info)
+	print('\n%s has been successfully written to \'barron_testpaper.txt\'.' % list_info)
