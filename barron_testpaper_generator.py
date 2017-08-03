@@ -113,7 +113,7 @@ if __name__ == '_main__':
     user_selection = int(input('Enter Selection (0) ==> ') or 0)
     word_list = bundles[user_selection]
 
-    
+
     selection = parse_range(R)
     words = barron.load_words(word_list,selection)
 
