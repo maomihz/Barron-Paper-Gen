@@ -22,6 +22,7 @@
 
 import random
 import sys, re
+import argparse
 from barron import Barron
 
 # Range selector string to list
@@ -94,16 +95,20 @@ def revparse_range(selection_list, prefer_dash = False):
 
     return ','.join(results)
 
-if __name__ == '_main__':
-    # Parse the arguments
-    R = sys.argv[1]  # take in parameter about range
-    try:
-        C = int(sys.argv[2])
-    except IndexError:
-        C = 100
+if __name__ == '__main__':
+    # Parse arguments
+    parser = argparse.ArgumentParser(prog='barron',
+                                     description='Random vocabulary test generator')
+    parser.add_argument('range', type=parse_range,
+                        help='Range specifier for selecting vocabulary units')
+    parser.add_argument('-n', '--count', nargs='?', type=int, default=100,
+                        help='Number of words to select')
+    parser.add_argument('-o', '--output', nargs='?', type=argparse.FileType('w'),
+                        default=sys.stdout, const=open('barron_testpaper.txt', 'w'), 
+                        help='Output test paper file to write')
 
-    # open resources
-    sav = open('barron_testpaper.txt','w')	# this file will be saved
+    args = parser.parse_args()
+
 
     barron = Barron('res', 'txt')
     bundles = barron.list_bundles()
@@ -114,23 +119,16 @@ if __name__ == '_main__':
     word_list = bundles[user_selection]
 
 
-    selection = parse_range(R)
-    words = barron.load_words(word_list,selection)
+    words = barron.load_words(word_list,args.range)
 
     # Randomly select number of words
-    selected_words = random.sample(words.keys(), C)
+    selected_words = random.sample(words.keys(), args.count)
 
-    list_info = '# %s List %s' % (word_list, revparse_range(selection))
+    list_info = '# %s List %s' % (word_list, revparse_range(args.range))
 
     # Write to file and print to console
-    print('\n' + list_info + '\n')
-    sav.write(list_info + '\n\n')
+    args.output.write(list_info + '\n\n')
 
     for i, w in enumerate(selected_words):
         word_line = '%03d   %s' % (i + 1, w)
-        print(word_line)
-        sav.write(word_line + '\n')
-
-    sav.close()
-
-    print('\n%s has been successfully written to \'barron_testpaper.txt\'.' % list_info)
+        args.output.write(word_line + '\n')
