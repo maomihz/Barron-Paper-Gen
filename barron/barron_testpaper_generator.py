@@ -3,27 +3,12 @@
 
 # barron_testpaper_generator.py
 
-# Copyright 2017 Hisen Zhang <hisenzhang@gmail.com>
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA.
-
 import random
 import sys, re
+from os.path import join, isdir, expanduser
+from pkg_resources import resource_filename
 import argparse
-from barron import Barron
+from .barron import Barron
 
 # Range selector string to list
 def parse_range(range_str):
@@ -95,7 +80,7 @@ def revparse_range(selection_list, prefer_dash = False):
 
     return ','.join(results)
 
-if __name__ == '__main__':
+def main():
     # Parse arguments
     parser = argparse.ArgumentParser(prog='barron',
                                      description='Random vocabulary test generator')
@@ -104,13 +89,13 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--count', nargs='?', type=int, default=100,
                         help='Number of words to select')
     parser.add_argument('-o', '--output', nargs='?', type=argparse.FileType('w'),
-                        default=sys.stdout, const=open('barron_testpaper.txt', 'w'), 
+                        default=sys.stdout, const=open('barron_testpaper.txt', 'w'),
                         help='Output test paper file to write')
 
     args = parser.parse_args()
 
 
-    barron = Barron('res', 'txt')
+    barron = Barron(expanduser('~/.barron'), 'txt')
     bundles = barron.list_bundles()
     for i, n in enumerate(bundles):
         print('[%d] %s' % (i, n))

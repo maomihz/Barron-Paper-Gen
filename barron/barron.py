@@ -5,7 +5,7 @@ import re, glob
 class Barron:
     def __init__(self, resource_dir='res', extension='txt'):
         if not os.path.isdir(resource_dir):
-            raise ValueError('Resource directory does not exist!')
+            raise ValueError('Resource directory %s does not exist!' % resource_dir)
         self.resource_dir = resource_dir
         self.extension = extension
         self.word_lists = dict()
