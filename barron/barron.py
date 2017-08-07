@@ -1,6 +1,6 @@
 import os, re
 from glob import glob
-from os.path import isdir, join, basename, exists
+from os.path import isdir, join, basename, exists, split
 from zipfile import ZipFile
 from fnmatch import fnmatch
 
@@ -76,7 +76,7 @@ class Barron:
             z = file
         else:
             z = ZipFile(file)
-        zipname = z.filename.split('.')[0]
+        zipname = split(z.filename)[-1].split('.')[0]
         for name in z.namelist():
             if fnmatch(name, '%s_*%s' % (zipname, self.extension)):
                 z.extract(name, self.resource_dir)

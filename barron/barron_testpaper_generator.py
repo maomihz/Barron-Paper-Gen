@@ -5,7 +5,7 @@
 
 import random
 import sys, re, zipfile
-from os.path import expanduser
+from os.path import expanduser, exists
 import argparse
 from .barron import Barron
 
@@ -96,8 +96,8 @@ def main():
                         help='Range specifier for selecting vocabulary units')
     parser.add_argument('-n', '--count', nargs=1, type=int, default=[100],
                         help='Number of words to select')
-    parser.add_argument('-o', '--output', nargs='?', type=argparse.FileType('w'),
-                        default=sys.stdout, const=open('barron_testpaper.txt', 'w'),
+    parser.add_argument('-o', '--output', nargs='?',
+                        const='barron_testpaper.txt',
                         help='Output test paper file to write')
     parser.add_argument('-i', '--install', metavar='BUNDLE_ZIP', nargs='+',
                         type=zipfile.ZipFile,
@@ -140,15 +140,19 @@ def main():
 
     bundles = barron.list_bundles()
     if len(bundles) < 1:
-        parser.exit('Error: No vocabulary bundle, please install one first.')
+        parser.exit('Error: No vocabulary bundle installed, please install one first.')
+
+    # Prompt user to select a bundle
     for i, n in enumerate(bundles):
         print('[%d] %s' % (i, n))
-
     user_selection = int(input('Enter Selection (0) ==> ') or 0)
     word_list = bundles[user_selection]
 
-
-    words = barron.load_words(word_list,args.range)
+    # Load the words from files
+    try:
+        words = barron.load_words(word_list,args.range)
+    except KeyError as e:
+        parser.exit('Error: %s unit %s does not exist!' % (word_list, e))
 
     # Randomly select number of words.
     # If request more than possible then shuffle all possible
@@ -158,9 +162,22 @@ def main():
 
     list_info = '# %s List %s' % (word_list, revparse_range(args.range))
 
+    # Open output file
+    if args.output:
+        if exists(args.output):
+            user_in = input('Output file already exist. Do you really want to overwrite %s?\n(Y/n) => ' % args.output)
+            if user_in in 'Yy':
+                output = open(args.output, 'w')
+            else:
+                parser.exit('Aborted')
+        else:
+            output = open(args.output, 'w')
+    else:
+        output = sys.stdout
+
     # Write to file and print to console
-    args.output.write(list_info + '\n\n')
+    output.write(list_info + '\n\n')
 
     for i, w in enumerate(selected_words):
         word_line = '%03d   %s' % (i + 1, w)
-        args.output.write(word_line + '\n')
+        output.write(word_line + '\n')
