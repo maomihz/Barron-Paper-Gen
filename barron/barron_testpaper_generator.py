@@ -5,8 +5,7 @@
 
 import random
 import sys, re
-from os.path import join, isdir, expanduser
-from pkg_resources import resource_filename
+from os.path import expanduser
 import argparse
 from .barron import Barron
 
@@ -96,7 +95,10 @@ def main():
 
 
     barron = Barron(expanduser('~/.barron'), 'txt')
+    barron.mkdir()
     bundles = barron.list_bundles()
+    if len(bundles) < 1:
+        parser.exit('Error: No vocabulary bundle, please install one first.')
     for i, n in enumerate(bundles):
         print('[%d] %s' % (i, n))
 
