@@ -7,7 +7,7 @@ A command-line utility to generate a testpaper (wordlist) based on *Barron SAT 3
 Introduction
 ============
 
-This is a command-line utility to generate a testpaper (wordlist) based on *Barron SAT 3500 Wordlist*, although it can be used for any vocabulary list (bundle) properly formatted.
+This is a Python command-line script to generate a testpaper (wordlist) based on *Barron SAT 3500 Wordlist*, although it can be used for any vocabulary list (bundle) properly formatted.
 
 By changing the command line arguments, it can select specified number of random vocabularies from specified units. The vocabulary bundle is not included in the package and must be downloaded and installed seperately.
 
@@ -35,7 +35,7 @@ If it displays a simple help message then the installation is successful. If it 
 Setting Up Vocabulary Bundles
 =============================
 
-The program is not bundled with any vocabulary lists, so you need to download and install one first. See the end of this document for downloads. The vocabulary bundles are in zip files, to install them, run the following command::
+The script is not bundled with any vocabulary lists, so you need to download and install one first. See the end of this document for downloads. The vocabulary bundles are in zip files, to install them, run the following command::
 
   $ barron -i path/to/bundle.zip
   path/to/barron.zip installed to /home/example/.barron
@@ -96,20 +96,49 @@ To redirect the output to a file, use ``-o``::
 
 It would silently overwrite ``testpaper.txt`` and write randomly selected vocabulary instead of printing to the console. If ``-o`` is specified without an argument, the default file name ``barron_testpaper.txt`` would be used.
 
+=================
+Uninstall
+=================
+
+To remove the package from pip, run the following command::
+
+  pip uninstall barron-gen
+
 
 =====================
-Files & Directories
+Development
 =====================
-This software package consists of following files:
+This script package consists of following files:
 
 * ``barron/`` - Main package
+
   * ``__init__.py``
+  * ``__main__.py``
   * ``barron_testpaper_generator.py`` - Command line entry
   * ``barron.py`` - Essential libraries
 
 * ``setup.py`` - pip setup file
 * ``README.rst`` - This help manual
+* ``MANIFEST.in`` - pip extra file specification
+* ``LICENSE`` - The license the script uses
 
+To start development, clone the repository::
+
+  git clone https://github.com/maomihz/Barron-Paper-Gen
+  cd Barron-Paper-Gen
+
+It is recommended to install the package first so it is easier to run the command::
+
+  pip install -e .
+
+Make sure you are in the root directory when run the above command. ``-e`` option allows the source file to be changed without reinstalling. Simply run ``barron`` again to reflect the change in code.
+
+It is also possible to run without installing::
+
+  python -m barron
+  python -m barron.barron_testpaper_generator
+
+Either of the above command runs the module directly. 
 
 =====================
 Copyright
