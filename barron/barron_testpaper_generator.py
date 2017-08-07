@@ -181,3 +181,6 @@ def main():
     for i, w in enumerate(selected_words):
         word_line = '%03d   %s' % (i + 1, w)
         output.write(word_line + '\n')
+
+if __name__ == '__main__':
+    main()
