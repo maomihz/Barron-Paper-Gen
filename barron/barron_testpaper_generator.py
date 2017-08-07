@@ -116,7 +116,7 @@ def main():
     if args.list:
         print('=== Installed Bundles: ===')
         for i in barron.list_bundles():
-            print(i, revparse_range(barron.list_units(i)))
+            print(i + ' ' + revparse_range(barron.list_units(i)))
         parser.exit()
 
     # Install bundle files
