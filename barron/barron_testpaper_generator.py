@@ -4,7 +4,7 @@
 # barron_testpaper_generator.py
 
 import random
-import sys, re
+import sys, re, zipfile
 from os.path import expanduser
 import argparse
 from .barron import Barron
@@ -83,19 +83,50 @@ def main():
     # Parse arguments
     parser = argparse.ArgumentParser(prog='barron',
                                      description='Random vocabulary test generator')
-    parser.add_argument('range', type=parse_range,
+    parser.add_argument('range', type=parse_range, nargs='?',
                         help='Range specifier for selecting vocabulary units')
-    parser.add_argument('-n', '--count', nargs='?', type=int, default=100,
+    parser.add_argument('-n', '--count', nargs=1, type=int, default=100,
                         help='Number of words to select')
     parser.add_argument('-o', '--output', nargs='?', type=argparse.FileType('w'),
                         default=sys.stdout, const=open('barron_testpaper.txt', 'w'),
                         help='Output test paper file to write')
+    parser.add_argument('-i', '--install', metavar='BUNDLE_ZIP', nargs='+',
+                        type=zipfile.ZipFile,
+                        help='Install vocabulary bundle')
+    parser.add_argument('-r', '--remove', metavar='BUNDLE_NAME', nargs='+',
+                        help='The bundle to remove')
+    parser.add_argument('-l', '--list', action='store_const', const=True,
+                        default=False, help='list installed vocabulary bundles')
 
     args = parser.parse_args()
 
 
     barron = Barron(expanduser('~/.barron'), 'txt')
     barron.mkdir()
+    # List bundle files:
+    if args.list:
+        print('=== Installed Bundles: ===')
+        for i in barron.list_bundles():
+            print(i, revparse_range(barron.list_units(i)))
+        parser.exit()
+    # Install bundle files
+    if args.install:
+        for f in args.install:
+            barron.install_bundle(f)
+            print('%s installed to %s' % (f.filename, barron.resource_dir))
+        parser.exit()
+
+    if args.remove:
+        for f in args.remove:
+            try:
+                barron.remove_bundle(f)
+            except ValueError as e:
+                parser.error(e)
+        parser.exit()
+
+    if not args.range:
+        parser.error('Argument range is required')
+
     bundles = barron.list_bundles()
     if len(bundles) < 1:
         parser.exit('Error: No vocabulary bundle, please install one first.')

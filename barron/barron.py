@@ -1,6 +1,8 @@
 import os, re
 from glob import glob
 from os.path import isdir, join, basename, exists
+from zipfile import ZipFile
+from fnmatch import fnmatch
 
 
 class Barron:
@@ -20,6 +22,7 @@ class Barron:
 
 
     def reload_files(self):
+        self.word_lists = dict()
         # if the directory does not exist then do nothing
         if not exists(self.resource_dir) or not isdir(self.resource_dir):
             return
@@ -66,6 +69,27 @@ class Barron:
     def mkdir(self):
         if not isdir(self.resource_dir) and not exists(self.resource_dir):
             os.makedirs(self.resource_dir)
+
+    def install_bundle(self, file):
+        self.mkdir()
+        if type(file) is ZipFile:
+            z = file
+        else:
+            z = ZipFile(file)
+        zipname = z.filename.split('.')[0]
+        for name in z.namelist():
+            if fnmatch(name, '%s_*%s' % (zipname, self.extension)):
+                z.extract(name, self.resource_dir)
+        self.reload_files()
+
+
+    def remove_bundle(self, bundle):
+        self.__valid_name(bundle)
+        files = glob(join(self.resource_dir, '%s_*%s' % (bundle, self.extension)))
+        for f in files:
+            os.remove(f)
+        self.reload_files()
+
 
     # Helper methods
     def __get_path(self, name, unit):
