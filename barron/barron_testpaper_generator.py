@@ -30,9 +30,13 @@ def parse_range(range_str):
     selection = set()
 
     for e in elements:
+        if not e:
+            continue
         # Single Integer match
         m = normal.match(e)
         if m:
+            if int(m.group(1)) < 1:
+                raise argparse.ArgumentTypeError('Error in %s: Range selection must be positive!' % e)
             selection.add(int(m.group(1)))
             continue
 
@@ -41,10 +45,15 @@ def parse_range(range_str):
         if m:
             start = int(m.group(1))
             end = int(m.group(2))
+            if start < 1 or end < 1:
+                raise argparse.ArgumentTypeError('Error in %s: Range selection must be positive!' % e)
             if end < start:
-                raise ValueError('Error Parsing range %s: End < Start' % e)
+                raise argparse.ArgumentTypeError('Error Parsing range %s: End < Start' % e)
             for i in range(start, end + 1):
                 selection.add(i)
+            continue
+        # Non match
+        raise argparse.ArgumentTypeError('Error Parsing Range: %s' % e)
     return sorted(selection)
 
 
@@ -85,7 +94,7 @@ def main():
                                      description='Random vocabulary test generator')
     parser.add_argument('range', type=parse_range, nargs='?',
                         help='Range specifier for selecting vocabulary units')
-    parser.add_argument('-n', '--count', nargs=1, type=int, default=100,
+    parser.add_argument('-n', '--count', nargs=1, type=int, default=[100],
                         help='Number of words to select')
     parser.add_argument('-o', '--output', nargs='?', type=argparse.FileType('w'),
                         default=sys.stdout, const=open('barron_testpaper.txt', 'w'),
@@ -100,15 +109,16 @@ def main():
 
     args = parser.parse_args()
 
-
     barron = Barron(expanduser('~/.barron'), 'txt')
     barron.mkdir()
+
     # List bundle files:
     if args.list:
         print('=== Installed Bundles: ===')
         for i in barron.list_bundles():
             print(i, revparse_range(barron.list_units(i)))
         parser.exit()
+
     # Install bundle files
     if args.install:
         for f in args.install:
@@ -124,6 +134,7 @@ def main():
                 parser.error(e)
         parser.exit()
 
+    # Require range argument
     if not args.range:
         parser.error('Argument range is required')
 
@@ -139,8 +150,11 @@ def main():
 
     words = barron.load_words(word_list,args.range)
 
-    # Randomly select number of words
-    selected_words = random.sample(words.keys(), args.count)
+    # Randomly select number of words.
+    # If request more than possible then shuffle all possible
+    if args.count[0] > len(words):
+        args.count[0] = len(words)
+    selected_words = random.sample(words.keys(), args.count[0])
 
     list_info = '# %s List %s' % (word_list, revparse_range(args.range))
 
