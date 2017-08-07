@@ -4,6 +4,7 @@ setup(
     name='barron_gen',
     version='0.1',
     description='Vocabulary test generator',
+    long_description=open('README.rst').read(),
     url='https://github.com/maomihz/Barron-Paper-Gen',
     author='Dexter MaomiHz',
     author_email='maomihz@gmail.com',
